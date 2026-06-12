@@ -1,6 +1,50 @@
+package com.CRUD.CRUDOperations.model;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+public class User {
+    private Long id;
+
+    @NotNull(message = "Name cannot be null")
+    @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
+    private String name;
+
+    @NotNull(message = "Email cannot be null")
+    @Email(message = "Email should be valid")
+    private String email;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+}
+
 package com.CRUD.CRUDOperations.service;
 
 import com.CRUD.CRUDOperations.model.User;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,7 +55,8 @@ import java.util.Optional;
 public class UserService {
     private List<User> users = new ArrayList<>();
     private Long nextId = 1L;
-    public User createUser(User user) {
+
+    public User createUser(@Valid User user) {
         user.setId(nextId++);
         users.add(user);
         return user;
@@ -25,7 +70,7 @@ public class UserService {
         return users.stream().filter(user -> user.getId().equals(id)).findFirst();
     }
 
-    public Optional<User> updateUser(Long id, User updatedUser) {
+    public Optional<User> updateUser(Long id, @Valid User updatedUser) {
         Optional<User> existingUser = getUserById(id);
         if (existingUser.isPresent()) {
             User user = existingUser.get();
@@ -40,4 +85,3 @@ public class UserService {
         return users.removeIf(user -> user.getId().equals(id));
     }
 }
-
