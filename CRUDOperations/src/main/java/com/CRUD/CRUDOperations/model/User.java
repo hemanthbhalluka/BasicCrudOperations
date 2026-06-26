@@ -1,9 +1,19 @@
 package com.CRUD.CRUDOperations.model;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 public class User {
 
     private Long id;
+
+    @NotNull(message = "Name cannot be null")
+    @Size(min = 1, max = 50, message = "Name must be between 1 and 50 characters")
     private String name;
+
+    @NotNull(message = "Email cannot be null")
+    @Email(message = "Email should be valid")
     private String email;
 
     public User() {}
@@ -39,4 +49,3 @@ public class User {
         this.email = email;
     }
 }
-
