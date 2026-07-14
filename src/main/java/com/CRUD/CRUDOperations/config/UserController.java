@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 pom.xml:
 <dependency>
     <groupId>com.github.vladimir-bukhtoyarov</groupId>
@@ -21,20 +20,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class RateLimitingFilter extends OncePerRequestFilter {
 
-    private final Bucket bucket;
+    private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
 
-    public RateLimitingFilter() {
+    private Bucket createNewBucket() {
         Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
-        this.bucket = Bucket4j.builder().addLimit(limit).build();
+        return Bucket4j.builder().addLimit(limit).build();
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        String clientIp = request.getRemoteAddr();
+        Bucket bucket = buckets.computeIfAbsent(clientIp, k -> createNewBucket());
+
         if (bucket.tryConsume(1)) {
             filterChain.doFilter(request, response);
         } else {
@@ -63,6 +66,3 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(rateLimitingFilter);
     }
 }
-=======
-[updated code here without any markdown or formatting]
->>>>>>> 9378230808a04e74c9da489695cbb5cc5d92d495

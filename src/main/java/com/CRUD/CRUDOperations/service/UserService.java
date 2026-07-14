@@ -2,6 +2,7 @@ package com.CRUD.CRUDOperations.service;
 
 import com.CRUD.CRUDOperations.model.User;
 import com.CRUD.CRUDOperations.dto.UserDTO;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class UserService {
      * @param user The user to be created.
      * @return The created user with an assigned ID.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     public User createUser(User user) {
         user.setId(nextId.incrementAndGet());
         users.add(user);
@@ -30,6 +32,7 @@ public class UserService {
      * Retrieves all users in the system.
      * @return A list of all users with sensitive data excluded.
      */
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public List<UserDTO> getAllUsers() {
         return users.stream()
                 .map(user -> new UserDTO(user.getId(), user.getName(), user.getEmail()))
@@ -41,6 +44,7 @@ public class UserService {
      * @param id The ID of the user to retrieve.
      * @return An Optional containing the user if found, or empty if not found.
      */
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public Optional<User> getUserById(Long id) {
         return users.stream().filter(user -> user.getId().equals(id)).findFirst();
     }
@@ -51,6 +55,7 @@ public class UserService {
      * @param updatedUser The user object containing updated details.
      * @return An Optional containing the updated user if found, or empty if not found.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     public Optional<User> updateUser(Long id, User updatedUser) {
         Optional<User> userOptional = getUserById(id);
         if (userOptional.isPresent()) {
@@ -67,37 +72,8 @@ public class UserService {
      * @param id The ID of the user to delete.
      * @return True if the user was successfully deleted, false otherwise.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     public boolean deleteUser(Long id) {
         return users.removeIf(user -> user.getId().equals(id));
-    }
-}
-
-package com.CRUD.CRUDOperations.dto;
-
-/**
- * Data Transfer Object for User.
- * Contains only non-sensitive fields to prevent data exposure.
- */
-public class UserDTO {
-    private Long id;
-    private String name;
-    private String email;
-
-    public UserDTO(Long id, String name, String email) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEmail() {
-        return email;
     }
 }

@@ -3,6 +3,8 @@ package com.CRUD.CRUDOperations.model;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.owasp.html.PolicyFactory;
+import org.owasp.html.Sanitizers;
 
 public class User {
 
@@ -41,7 +43,8 @@ public class User {
         if (name == null || name.isEmpty() || name.length() > 50) {
             throw new IllegalArgumentException("Name must be between 1 and 50 characters and cannot be null");
         }
-        this.name = name;
+        PolicyFactory policy = Sanitizers.FORMATTING.and(Sanitizers.LINKS);
+        this.name = policy.sanitize(name);
     }
 
     public String getEmail() {

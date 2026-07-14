@@ -89,8 +89,12 @@ hash_string() {
   printf %x\\n $h
 }
 
-verbose() { :; }
-[ "${MVNW_VERBOSE-}" != true ] || verbose() { printf %s\\n "${1-}"; }
+verbose() {
+  if [ "${MVNW_VERBOSE-}" = true ]; then
+    sanitized_message=$(echo "${1-}" | sed -E 's/(https?:\/\/)[^@]+@/\1[REDACTED]@/g' | sed -E 's/(password=)[^&]+/\1[REDACTED]/g')
+    printf %s\\n "$sanitized_message"
+  fi
+}
 
 die() {
   printf %s\\n "$1" >&2
