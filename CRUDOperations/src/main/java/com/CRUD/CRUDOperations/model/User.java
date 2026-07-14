@@ -20,8 +20,8 @@ public class User {
 
     public User(Long id, String name, String email) {
         this.id = id;
-        this.name = name;
-        this.email = email;
+        setName(name);
+        setEmail(email);
     }
 
     // Getters and Setters
@@ -38,6 +38,9 @@ public class User {
     }
 
     public void setName(String name) {
+        if (name == null || name.isEmpty() || name.length() > 50) {
+            throw new IllegalArgumentException("Name must be between 1 and 50 characters and cannot be null");
+        }
         this.name = name;
     }
 
@@ -46,6 +49,9 @@ public class User {
     }
 
     public void setEmail(String email) {
+        if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            throw new IllegalArgumentException("Email should be valid and cannot be null");
+        }
         this.email = email;
     }
 }
