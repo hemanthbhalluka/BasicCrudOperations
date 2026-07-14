@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 pom.xml:
 <dependency>
     <groupId>com.github.vladimir-bukhtoyarov</groupId>
@@ -62,3 +63,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(rateLimitingFilter);
     }
 }
+=======
+[updated code here without any markdown or formatting]
+>>>>>>> 9378230808a04e74c9da489695cbb5cc5d92d495
