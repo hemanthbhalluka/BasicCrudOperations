@@ -18,7 +18,10 @@ public class SecurityConfig {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             )
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().authenticated()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/user/**").hasRole("USER")
+                .requestMatchers("/public/**").permitAll()
+                .anyRequest().denyAll()
             )
             .httpBasic();
         return http.build();

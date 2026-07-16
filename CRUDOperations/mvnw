@@ -203,20 +203,54 @@ elif set_java_home; then
   javaSource="$TMP_DOWNLOAD_DIR/Downloader.java"
   targetZip="$TMP_DOWNLOAD_DIR/$distributionUrlName"
   cat >"$javaSource" <<-END
-	public class Downloader extends java.net.Authenticator
-	{
-	  protected java.net.PasswordAuthentication getPasswordAuthentication()
-	  {
-	    return new java.net.PasswordAuthentication( System.getenv( "MVNW_USERNAME" ), System.getenv( "MVNW_PASSWORD" ).toCharArray() );
-	  }
-	  public static void main( String[] args ) throws Exception
-	  {
-	    setDefault( new Downloader() );
-	    java.nio.file.Files.copy( java.net.URI.create( args[0] ).toURL().openStream(), java.nio.file.Paths.get( args[1] ).toAbsolutePath().normalize() );
-	  }
+	import javax.net.ssl.*;
+	import java.io.*;
+	import java.net.URL;
+	import java.nio.file.*;
+	import java.security.KeyManagementException;
+	import java.security.NoSuchAlgorithmException;
+	import java.security.cert.CertificateException;
+	import java.security.cert.X509Certificate;
+
+	public class Downloader {
+	    public static void main(String[] args) throws Exception {
+	        String url = args[0];
+	        String target = args[1];
+
+	        SSLContext sslContext = SSLContext.getInstance("TLS");
+	        sslContext.init(null, new TrustManager[]{new X509TrustManager() {
+	            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+	            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+	                for (X509Certificate cert : chain) {
+	                    cert.checkValidity();
+	                }
+	            }
+	            public X509Certificate[] getAcceptedIssuers() {
+	                return new X509Certificate[0];
+	            }
+	        }}, new java.security.SecureRandom());
+
+	        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+	        URL downloadUrl = new URL(url);
+	        HttpsURLConnection connection = (HttpsURLConnection) downloadUrl.openConnection();
+	        connection.setRequestMethod("GET");
+	        connection.connect();
+
+	        if (connection.getResponseCode() != 200) {
+	            throw new IOException("Failed to download file: " + connection.getResponseMessage());
+	        }
+
+	        try (InputStream in = connection.getInputStream();
+	             OutputStream out = Files.newOutputStream(Paths.get(target))) {
+	            byte[] buffer = new byte[8192];
+	            int bytesRead;
+	            while ((bytesRead = in.read(buffer)) != -1) {
+	                out.write(buffer, 0, bytesRead);
+	            }
+	        }
+	    }
 	}
 	END
-  # For Cygwin/MinGW, switch paths to Windows format before running javac and java
   verbose " - Compiling Downloader.java ..."
   "$(native_path "$JAVACCMD")" "$(native_path "$javaSource")" || die "Failed to compile Downloader.java"
   verbose " - Running Downloader.java ..."

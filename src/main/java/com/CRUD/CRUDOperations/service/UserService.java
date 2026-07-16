@@ -1,7 +1,7 @@
 package com.CRUD.CRUDOperations.service;
 
 import com.CRUD.CRUDOperations.model.User;
-import com.CRUD.CRUDOperations.dto.UserDTO;
+import com.CRUD.CRUDOperations.dto.UserSummaryDTO;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -33,9 +33,9 @@ public class UserService {
      * @return A list of all users with sensitive data excluded.
      */
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public List<UserDTO> getAllUsers() {
+    public List<UserSummaryDTO> getAllUsers() {
         return users.stream()
-                .map(user -> new UserDTO(user.getId(), user.getName(), user.getEmail()))
+                .map(user -> new UserSummaryDTO(user.getId(), user.getName()))
                 .toList();
     }
 
@@ -75,5 +75,25 @@ public class UserService {
     @PreAuthorize("hasRole('ADMIN')")
     public boolean deleteUser(Long id) {
         return users.removeIf(user -> user.getId().equals(id));
+    }
+}
+
+package com.CRUD.CRUDOperations.dto;
+
+public class UserSummaryDTO {
+    private Long id;
+    private String name;
+
+    public UserSummaryDTO(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
     }
 }
