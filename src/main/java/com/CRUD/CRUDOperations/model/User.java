@@ -16,6 +16,7 @@ public class DataMaskingUtil {
         if (name == null || name.isEmpty()) {
             return "Invalid Name";
         }
+<<<<<<< HEAD
         return name.charAt(0) + "*****";
     }
 }
@@ -53,4 +54,40 @@ public class UserService {
         logger.info("Accessing user email: {}", maskedEmail);
         return maskedEmail;
     }
+=======
+        if (email == null) {
+            throw new IllegalArgumentException("Email must not be null");
+        }
+        this.id = id;
+        this.name = name;
+        this.email = email;
+    }
+
+    /**
+     * Gets the unique identifier of the user.
+     *
+     * @return the user ID
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * Gets the name of the user.
+     *
+     * @return the user's name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Gets the email address of the user.
+     *
+     * @return the user's email address
+     */
+    public String getEmail() {
+        return email;
+    }
+>>>>>>> 614359579e3959045ba43df6f73ea7d920a0a8d9
 }
