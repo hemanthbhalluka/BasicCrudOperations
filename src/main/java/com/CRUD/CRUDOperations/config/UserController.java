@@ -1,11 +1,3 @@
-pom.xml:
-<dependency>
-    <groupId>com.github.vladimir-bukhtoyarov</groupId>
-    <artifactId>bucket4j-core</artifactId>
-    <version>7.0.0</version>
-</dependency>
-
-RateLimitingFilter.java:
 package com.CRUD.CRUDOperations.config;
 
 import io.github.bucket4j.Bandwidth;
@@ -32,11 +24,21 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         return Bucket4j.builder().addLimit(limit).build();
     }
 
+    private String getRateLimitKey(HttpServletRequest request) {
+        String userToken = request.getHeader("Authorization");
+        if (userToken != null && !userToken.isEmpty()) {
+            return userToken; // Use the user token if available
+        }
+        String userAgent = request.getHeader("User-Agent");
+        String clientIp = request.getRemoteAddr();
+        return clientIp + ":" + (userAgent != null ? userAgent : "unknown"); // Fallback to IP + User-Agent
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String clientIp = request.getRemoteAddr();
-        Bucket bucket = buckets.computeIfAbsent(clientIp, k -> createNewBucket());
+        String rateLimitKey = getRateLimitKey(request);
+        Bucket bucket = buckets.computeIfAbsent(rateLimitKey, k -> createNewBucket());
 
         if (bucket.tryConsume(1)) {
             filterChain.doFilter(request, response);
@@ -44,25 +46,5 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_TOO_MANY_REQUESTS);
             response.getWriter().write("Too many requests - Rate limit exceeded");
         }
-    }
-}
-
-WebConfig.java:
-package com.CRUD.CRUDOperations.config;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-@Configuration
-public class WebConfig implements WebMvcConfigurer {
-
-    @Autowired
-    private RateLimitingFilter rateLimitingFilter;
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(rateLimitingFilter);
     }
 }
